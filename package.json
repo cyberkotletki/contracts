@@ -1,0 +1,18 @@
+{
+  "name": "blockchain_dev",
+  "module": "index.ts",
+  "type": "commonjs",
+  "private": true,
+  "devDependencies": {
+    "@types/bun": "latest"
+  },
+  "peerDependencies": {
+    "typescript": "^5"
+  },
+  "dependencies": {
+    "@nomicfoundation/hardhat-toolbox": "^6.0.0",
+    "@types/jest": "^30.0.0",
+    "hardhat": "^2.25.0",
+    "solidity-coverage": "^0.8.16"
+  }
+}
