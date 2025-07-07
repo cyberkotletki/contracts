@@ -1,15 +1,10 @@
 # blockchain_dev
 
-To install dependencies:
+run following commands to start using contract 
 
-```bash
-bun install
 ```
-
-To run:
-
-```bash
-bun run index.ts
+bun i 
+bunx hardhat compile
+bunx hardhat node
+bunx remixd
 ```
-
-This project was created using `bun init` in bun v1.2.15. [Bun](https://bun.sh) is a fast all-in-one JavaScript runtime.

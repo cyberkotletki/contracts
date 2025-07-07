@@ -3,7 +3,7 @@ import fs from "fs";
 import path from "path";
 
 async function main() {
-    const address = "0x610178dA211FEF7D417bC0e6FeD39F05609AD788";
+    const address = "0x610178dA211FEF7D417bC0e6FeD39F05609AD788"; //setup another contract if u want to test it (i'm to lazy to create env file)
     console.log(address);
     const provider = new ethers.JsonRpcProvider("http://127.0.0.1:8545"); 
 
