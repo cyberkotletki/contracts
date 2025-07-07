@@ -4,7 +4,7 @@ pragma solidity ^0.8.24;
 import "./Handler.sol";
 import "./Types.sol";
 
-contract Donates is Handler{
+contract Donates {
     address payable public owner; 
 
     //constants 
@@ -17,13 +17,13 @@ contract Donates is Handler{
     uint private ownerBalance;
 
     //events
-    event UserCreated(string indexed uuid, UserBank user);
+    event UserCreated(string indexed uuid, string name);
     event PaymentCredited(string indexed streamerUUid, Payment payment, PaymentType indexed paymentType);
     event CommissionChanged(uint currentComission);
 
 
     constructor(uint k) {
-        require(k != 0, "K can't be equal to 0");
+        require(k != 0 && k < 10, "K can't be equal to 0 or more than 10");
         owner = payable(msg.sender);
         ownerBalance = 0;
         K = k*10;
@@ -49,11 +49,11 @@ contract Donates is Handler{
             currentBalance: 0
         });
         users[msg.sender] = user;
-        emit UserCreated(uuid, user);
+        emit UserCreated(uuid, user.user.name);
     }
 
 
-     function Donate(string memory uuid, PaymentUserData memory pud, PaymentInfo memory pi) external payable {
+    function Donate(string memory uuid, PaymentUserData memory pud, PaymentInfo memory pi) external payable {
         require(bytes(uuid).length > 0, "uuid can't be null");
         require(msg.value >= MINIMAL_DONATE, "donate must be more than 10 cent");
 
@@ -72,14 +72,16 @@ contract Donates is Handler{
 
         payAndTakeCommission(payable(payment.paymentInfo.toAddress), msg.value);
         emit PaymentCredited(payment.paymentInfo.toUUID, payment, PaymentType.Donate);  
-     }
+    }
 
-    function Withdraw(string memory uuid, uint amount) external noReentrant {
+    
+
+    function Withdraw(string memory uuid, uint amount) external {
          
         require(users[msg.sender].currentBalance >= amount);
         users[msg.sender].currentBalance -= amount;
 
-        (bool send, bytes memory data) = payable(msg.sender).call{value: amount}("");
+        (bool send, ) = payable(msg.sender).call{value: amount}("");
         assert(send);
 
         Payment memory payment = Payment({
@@ -103,9 +105,11 @@ contract Donates is Handler{
         emit PaymentCredited(users[msg.sender].user.uuid, payment, payment.paymentInfo.paymentType);
     }
 
+
     //owner functions
     function ChangeCommission(uint commission) external {
-        require(K < 10, "commission can't be more than 10%");
+        require(msg.sender == owner, "u're not owner!");
+        require(commission < 10, "commission can't be more than 10%");
         K = commission * 10;
         emit CommissionChanged(commission);
     }
@@ -117,7 +121,7 @@ contract Donates is Handler{
         uint commission = (amount * K) / SCALE;
         ownerBalance+=commission;
 
-        (bool send, bytes memory data) = addr.call{value: amount-commission}("");
+        (bool send, ) = addr.call{value: amount-commission}("");
         assert(send);
     }
 

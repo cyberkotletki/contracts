@@ -11,6 +11,7 @@
   },
   "dependencies": {
     "@nomicfoundation/hardhat-toolbox": "^6.0.0",
+    "@remix-project/remixd": "^0.6.49",
     "@types/jest": "^30.0.0",
     "hardhat": "^2.25.0",
     "solidity-coverage": "^0.8.16"
