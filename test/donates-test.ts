@@ -34,10 +34,10 @@ describe('donates', () =>{
     describe('adding and removing wishes', () =>{
         it('should add and remove wishes', async () =>{
             const {donates, owner} = await setupAndDeploy(2);
-            await donates.RegisterUser('name', 'uuid', ['topic1', 'topic2']);
+            await donates.registerUser('name', 'uuid', ['topic1', 'topic2']);
             let newUser = await donates.users(owner.address);
 
-            await donates.AddWish({
+            await donates.addWish({
                 userUUID: newUser.user.uuid,
                 id: 1,
                 currentBalance: 0,
@@ -48,7 +48,7 @@ describe('donates', () =>{
                 completed: false,
             })
         
-            await donates.CompleteOrRemoveWish(owner.address, 1, true);
+            await donates.completeOrRemoveWish(owner.address, 1, true);
             newUser = await donates.users(owner);
             expect(newUser.user.wishes.length).to.equal(0);
         });
@@ -56,8 +56,8 @@ describe('donates', () =>{
         it('should throw exception with price == 0', async () =>{
             const {donates, owner} = await setupAndDeploy();
             
-            await donates.RegisterUser('name', 'uuid', ['topic1', 'topic2']);
-            expect(donates.AddWish({
+            await donates.registerUser('name', 'uuid', ['topic1', 'topic2']);
+            expect(donates.addWish({
                 userUUID: '0',
                 id: 1,
                 currentBalance: 0,
@@ -72,8 +72,8 @@ describe('donates', () =>{
         it('should throw exception with completed == true', async () =>{
             const {donates, owner} = await setupAndDeploy();
             
-            await donates.RegisterUser('name', 'uuid', ['topic1', 'topic2']);
-            expect(donates.AddWish({
+            await donates.registerUser('name', 'uuid', ['topic1', 'topic2']);
+            expect(donates.addWish({
                 userUUID: '0',
                 id: 1,
                 currentBalance: 0,
@@ -90,8 +90,8 @@ describe('donates', () =>{
         it('should throw exception bcs already completed', async () =>{
             const {donates, owner} = await setupAndDeploy();
             
-            await donates.RegisterUser('name', 'uuid', ['topic1', 'topic2']);
-            await donates.AddWish({
+            await donates.registerUser('name', 'uuid', ['topic1', 'topic2']);
+            await donates.addWish({
                 userUUID: '0',
                 id: 1,
                 currentBalance: 0,
@@ -102,15 +102,15 @@ describe('donates', () =>{
                 completed: false,
             });
 
-            expect(donates.CompleteOrRemoveWish(owner.address, 1, false)).
+            expect(donates.completeOrRemoveWish(owner.address, 1, false)).
             to.be.revertedWith('already completed');
         })
 
         it('should throw exception bcs ID1 == ID2', async () =>{
               const {donates, owner} = await setupAndDeploy();
             
-            await donates.RegisterUser('name', 'uuid', ['topic1', 'topic2']);
-            await donates.AddWish({
+            await donates.registerUser('name', 'uuid', ['topic1', 'topic2']);
+            await donates.addWish({
                 userUUID: '0',
                 id: 1,
                 currentBalance: 0,
@@ -121,7 +121,7 @@ describe('donates', () =>{
                 completed: false,
             });
 
-            expect(donates.AddWish({
+            expect(donates.addWish({
                 userUUID: '0',
                 id: 1,
                 currentBalance: 0,
@@ -138,11 +138,11 @@ describe('donates', () =>{
     describe("verify donation and withdraw works", () =>{
         it("should get the right commission", async () =>{
             const {donates, owner, otherAccount} = await setupAndDeploy(2);
-            await donates.connect(owner).RegisterUser('owner', '0', ['owo', 'uwu']);
-            await donates.connect(otherAccount).RegisterUser('idk', '1', ['-w-']);
+            await donates.connect(owner).registerUser('owner', '0', ['owo', 'uwu']);
+            await donates.connect(otherAccount).registerUser('idk', '1', ['-w-']);
             const otherAccountAddress = otherAccount.address;
 
-            await donates.connect(otherAccount).AddWish({
+            await donates.connect(otherAccount).addWish({
                 userUUID: '1',
                 id: 0,
                 currentBalance: 0,
@@ -154,7 +154,7 @@ describe('donates', () =>{
             });
 
             const donateAmount = hre.ethers.parseEther('0.00001');
-            await donates.connect(owner).Donate('010', {
+            await donates.connect(owner).donate('010', {
                 userName: 'owner',
                 messageText: 'hello!',
             }, {
@@ -173,11 +173,11 @@ describe('donates', () =>{
 
         it('should withdraw succesfully', async () =>{
             const {donates, owner, otherAccount} = await setupAndDeploy(2);
-            await donates.connect(owner).RegisterUser('owner', '0', ['owo', 'uwu']);
-            await donates.connect(otherAccount).RegisterUser('idk', '1', ['-w-']);
+            await donates.connect(owner).registerUser('owner', '0', ['owo', 'uwu']);
+            await donates.connect(otherAccount).registerUser('idk', '1', ['-w-']);
             const otherAccountAddress = otherAccount.address;
 
-            await donates.connect(otherAccount).AddWish({
+            await donates.connect(otherAccount).addWish({
                 userUUID: '1',
                 id: 0,
                 currentBalance: 0,
@@ -189,7 +189,7 @@ describe('donates', () =>{
             });
 
             const donateAmount = hre.ethers.parseEther('0.00001');
-            await donates.connect(owner).Donate('010', {
+            await donates.connect(owner).donate('010', {
                 userName: 'owner',
                 messageText: 'hello!',
             }, {
@@ -208,7 +208,7 @@ describe('donates', () =>{
             const withdrawAmount = donateAmount * BigInt(98)/BigInt(100);            
             const balanceBefore = await hre.ethers.provider.getBalance(otherAccount.address);
 
-            const tx = await donates.connect(otherAccount).Withdraw('wqe', '1', withdrawAmount);
+            const tx = await donates.connect(otherAccount).withdraw('wqe', '1', withdrawAmount);
 
             const receipt = await tx.wait();
             if (!receipt){
@@ -225,18 +225,18 @@ describe('donates', () =>{
 
         it('should fail bcs not enough balance', async () =>{
             const {donates} = await setupAndDeploy();
-            expect(donates.Withdraw('', '', 0)).to.be.reverted;
+            expect(donates.withdraw('', '', 0)).to.be.reverted;
         });
     })
 
     describe("owner withdraw", () =>{
         it('should transact', async () => {
             const {donates, owner, otherAccount} = await setupAndDeploy(2);
-            await donates.connect(owner).RegisterUser('owner', '0', ['owo', 'uwu']);
-            await donates.connect(otherAccount).RegisterUser('idk', '1', ['-w-']);
+            await donates.connect(owner).registerUser('owner', '0', ['owo', 'uwu']);
+            await donates.connect(otherAccount).registerUser('idk', '1', ['-w-']);
             const otherAccountAddress = otherAccount.address;
 
-            await donates.connect(otherAccount).AddWish({
+            await donates.connect(otherAccount).addWish({
                 userUUID: '1',
                 id: 4,
                 currentBalance: 0,
@@ -248,7 +248,7 @@ describe('donates', () =>{
             });
 
             const donateAmount = hre.ethers.parseEther('0.004');
-            await donates.connect(owner).Donate('010', {
+            await donates.connect(owner).donate('010', {
                 userName: 'owner',
                 messageText: 'hello!',
             }, {
@@ -265,7 +265,7 @@ describe('donates', () =>{
             const balanceBefore = await hre.ethers.provider.getBalance(owner.address);
         
             const withdrawAmount = await donates.ownerBalance();
-            const tx = await donates.OwnerWithdaw(withdrawAmount);
+            const tx = await donates.ownerWithdaw(withdrawAmount);
 
             const receipt = await tx.wait();
             if (!receipt){
@@ -297,7 +297,7 @@ describe('donates', () =>{
     
         it('should create right owner', async () =>{
             const {owner, donates} = await setupAndDeploy(2);
-            await donates.RegisterUser('owner', 'uuid' ,['uwынск', 'q']);
+            await donates.registerUser('owner', 'uuid' ,['uwынск', 'q']);
         
             expect(((await donates.users(owner.address)).currentBalance)).to.equal(user.currentBalance);
             expect((await donates.users(owner.address)).user.name).to.equal(user.user.name);
@@ -309,8 +309,8 @@ describe('donates', () =>{
         
         it('should correctly rename user', async () =>{
             const {owner, donates} = await setupAndDeploy(2);
-            await donates.RegisterUser('owner', 'uuid' ,['uwынск', 'q']);
-            await donates.ChangeName("uwынск");
+            await donates.registerUser('owner', 'uuid' ,['uwынск', 'q']);
+            await donates.changeName("uwынск");
             expect((await donates.users(owner.address)).user.name).to.equal('uwынск');
         })
     })

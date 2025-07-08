@@ -25,7 +25,7 @@ contract Donates {
     event PaymentCredited(string indexed streamerUUid, Payment payment, PaymentType indexed paymentType);
 
     //wish events
-    event wishAdded(string indexed userUUID, uint wishId, uint price);
+    event WishAdded(string indexed userUUID, uint wishId, uint price);
     event WishCompleted(string indexed userUUID , uint wishid, uint price);
     event WishDeleted(string indexed userUUID, uint wishid, uint accumulatedAmount);
 
@@ -45,7 +45,7 @@ contract Donates {
     //USER FUNCTIONS
 
     //just a user registration
-    function RegisterUser(string memory name, string memory uuid, string[] memory topics) external {
+    function registerUser(string memory name, string memory uuid, string[] memory topics) external {
         require(bytes(name).length > 0, "name can't be empty");
         Wish[] memory wishes;
         Payment[] memory payments;
@@ -65,7 +65,7 @@ contract Donates {
     }
 
     //donate from User/anonymous -> User (specified wish)
-    function Donate(string memory uuid, PaymentUserData memory pud, PaymentInfo memory pi) external payable {
+    function donate(string memory uuid, PaymentUserData memory pud, PaymentInfo memory pi) external payable {
         require(bytes(uuid).length > 0, "uuid can't be null");
         require(msg.value >= MINIMAL_TRANSFER_COST, Alreadyexists());
 
@@ -85,7 +85,7 @@ contract Donates {
         });
 
 
-        (uint amount, uint commission) = getComission(msg.value, K);
+        (uint amount, uint commission) = _getComission(msg.value, K);
         users[payment.paymentInfo.toAddress].currentBalance+=amount;
         payment.transferedToUserAmount = amount;
         ownerBalance+=commission;
@@ -94,7 +94,7 @@ contract Donates {
 
 
     //withdraw for the Users, don't charge a commission
-    function Withdraw(string memory uuid, string memory userUUID, uint amount) external {
+    function withdraw(string memory uuid, string memory userUUID, uint amount) external {
         require(users[msg.sender].currentBalance >= amount, "not enough money");
         users[msg.sender].currentBalance -= amount;
 
@@ -124,7 +124,7 @@ contract Donates {
 
 
     //just adding a wish to a user
-    function AddWish(Wish memory wish) external {
+    function addWish(Wish memory wish) external {
         require(wish.price > 0, "cost must be more than zero");
         require(wish.completed == false, "can't publish completed wish");
 
@@ -141,12 +141,12 @@ contract Donates {
 
 
         users[msg.sender].user.wishes.push(wish);
-        emit wishAdded(wish.userUUID, wish.id, wish.price);
+        emit WishAdded(wish.userUUID, wish.id, wish.price);
     }
 
 
     //if remove == true, removes wish from the use, else it just mark as finished
-    function CompleteOrRemoveWish(address useraddr, uint wishId, bool remove) external {
+    function completeOrRemoveWish(address useraddr, uint wishId, bool remove) external {
         Wish[] storage arr = users[useraddr].user.wishes;
         require(arr.length > 0, ArrayIsEmpty('wishes'));
         
@@ -173,13 +173,13 @@ contract Donates {
     }
 
 
-    function ChangeName(string memory newName) external{
+    function changeName(string memory newName) external{
         require(bytes(newName).length > 0, CantBeEmpty());
         users[msg.sender].user.name = newName;
     }
 
     //OWNER FUNCTIONS
-    function OwnerWithdaw(uint amount) external {
+    function ownerWithdaw(uint amount) external {
         require(msg.sender == owner, "u must be owner!");
         require(amount >= MINIMAL_TRANSFER_COST, MustBeMoreThanMinimalTransferCost());
         require(ownerBalance >= amount, 'not enough money');
@@ -203,7 +203,7 @@ contract Donates {
     //get comission divides amount into two parts: (value, commission)
     //value - amount of ETH that'll be transfered to user
     //comission transfered to owner balance
-    function getComission(uint amount, uint k) private pure returns(uint, uint){
+    function _getComission(uint amount, uint k) private pure returns(uint, uint){
         uint commission = (amount * k )/1000;
         return (amount - commission, commission);
     }
