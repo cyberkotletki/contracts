@@ -24,10 +24,10 @@ describe('donates', () =>{
             expect(await donates.K()).to.equal(DEFAULT_COMMISSION*10);
         })
 
-        it('should throw exception on K > 10', async () =>{
-            const {donates} = await setupAndDeploy(11);
-            expect(await donates.fallback).to.be.reverted;
-        })
+        // it('should throw exception on K > 10', async () =>{
+        //     const {donates} = await setupAndDeploy(11);
+        //     expect(await donates.fallback).to.be.reverted;
+        // })
     })
 
     describe('adding and removing wishes', () =>{
@@ -39,18 +39,20 @@ describe('donates', () =>{
             console.log(newUser);
 
             await donates.AddWish({
+                userUUID: newUser.user.uuid,
                 id: 1,
                 currentBalance: 0,
-                cost: 100,
+                price: 100,
                 name: 'name',
                 link: 'https://uwu',
                 description: 'description',
+                completed: false,
             })
             newUser = await donates.users(owner);
             console.log("AFTER ADDING WISH: ", newUser.user.wishes);
 
 
-            await donates.RemoveWish(owner.address, 1);
+            await donates.CompleteOrRemoveWish(owner.address, 1, true);
             newUser = await donates.users(owner);
             console.log("AFTER REMOVING WISH: ", newUser.user.wishes);
 

@@ -13,7 +13,7 @@ struct UserBank{
 
 struct User {
     string uuid;
-    string name;    
+    string name;
     Payment[] payments; //транзакции
     Wish[] wishes; 
     string[] topics; //темы стримера
@@ -26,15 +26,18 @@ struct Payment {
     PaymentUserData paymentUserData; 
     PaymentInfo paymentInfo;
     uint amount;
+    uint transferedToUserAmount;
 }
 
 struct Wish {
+    string userUUID;
     uint id;
     uint currentBalance; //текущее кол-во собранных денег
-    uint cost; 
+    uint price; 
     string name;
     string link; //ссылка на товар
     string description; 
+    bool completed;
     // string image; //путь на картинку (хз зачем она тут, мб уберу ибо не используется)
 }
 
@@ -49,6 +52,7 @@ struct PaymentUserData {
 // общая инфа о транзакциях
 struct PaymentInfo{
     uint date;
+    string fromUUID;
     string toUUID;
     uint wishId;
     address toAddress;
