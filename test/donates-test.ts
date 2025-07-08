@@ -24,15 +24,18 @@ describe('donates', () =>{
             expect(await donates.K()).to.equal(DEFAULT_COMMISSION*10);
         })
 
+        it('should throw exception with comission > 10', async () =>{
+            // const {donates} = await setupAndDeploy(11);
+            expect(await setupAndDeploy()).to.be.revertedWith("K can't be equal to 0 or more than 10");
+        })
+
     })
 
     describe('adding and removing wishes', () =>{
         it('should add and remove wishes', async () =>{
             const {donates, owner} = await setupAndDeploy(2);
-            
             await donates.RegisterUser('name', 'uuid', ['topic1', 'topic2']);
             let newUser = await donates.users(owner.address);
-            console.log(newUser);
 
             await donates.AddWish({
                 userUUID: newUser.user.uuid,
@@ -48,15 +51,46 @@ describe('donates', () =>{
             await donates.CompleteOrRemoveWish(owner.address, 1, true);
             newUser = await donates.users(owner);
             expect(newUser.user.wishes.length).to.equal(0);
+        });
+
+        it('should throw exception with price == 0', async () =>{
+            const {donates, owner} = await setupAndDeploy();
+            
+            await donates.RegisterUser('name', 'uuid', ['topic1', 'topic2']);
+            expect(donates.AddWish({
+                userUUID: '0',
+                id: 1,
+                currentBalance: 0,
+                price: 0,
+                name: 'name',
+                link: 'https://uwu',
+                description: 'description',
+                completed: false,
+            })).to.be.revertedWith('cost must be more than zero');
+        });
+
+        it('should throw exception with completed == true', async () =>{
+            const {donates, owner} = await setupAndDeploy();
+            
+            await donates.RegisterUser('name', 'uuid', ['topic1', 'topic2']);
+            expect(donates.AddWish({
+                userUUID: '0',
+                id: 1,
+                currentBalance: 0,
+                price: 0,
+                name: 'name',
+                link: 'https://uwu',
+                description: 'description',
+                completed: true,
+            })).to.be.revertedWith('cost must be more than zero');
         })
+
     })
 
-    describe("verify donation works", () =>{
+    describe("verify donation and withdraw works", () =>{
         it("should get the right commission", async () =>{
             const {donates, owner, otherAccount} = await setupAndDeploy(2);
-            
             await donates.connect(owner).RegisterUser('owner', '0', ['owo', 'uwu']);
-            
             await donates.connect(otherAccount).RegisterUser('idk', '1', ['-w-']);
             const otherAccountAddress = otherAccount.address;
 
@@ -88,6 +122,99 @@ describe('donates', () =>{
 
             expect(await donates.ownerBalance()).to.equal(donateAmount*BigInt(2)/BigInt(100));
         })
+
+        it('should withdraw succesfully', async () =>{
+                   const {donates, owner, otherAccount} = await setupAndDeploy(2);
+            await donates.connect(owner).RegisterUser('owner', '0', ['owo', 'uwu']);
+            await donates.connect(otherAccount).RegisterUser('idk', '1', ['-w-']);
+            const otherAccountAddress = otherAccount.address;
+
+            await donates.connect(otherAccount).AddWish({
+                userUUID: '1',
+                id: 0,
+                currentBalance: 0,
+                price: 10000000000,
+                name: 'book',
+                link: 'https://boook',
+                description: 'it is a book',
+                completed: false
+            });
+
+            const donateAmount = hre.ethers.parseEther('0.00001');
+            await donates.connect(owner).Donate('010', {
+                userName: 'owner',
+                messageText: 'hello!',
+            }, {
+                date: 1234,
+                fromUUID: '0',
+                toUUID: '1',
+                wishId: 0,
+                toAddress: otherAccountAddress,
+                paymentType: 0,
+            }, {
+                value: donateAmount,
+            })
+
+
+
+            const withdrawAmount = donateAmount * BigInt(98)/BigInt(100);            
+        
+
+            const balanceBefore = await hre.ethers.provider.getBalance(otherAccount.address);
+
+            const tx = await donates.connect(otherAccount).Withdraw('wqe', '1', withdrawAmount);
+
+            const receipt = await tx.wait();
+            if (!receipt){
+                fail();
+            }
+            const gasUsed = receipt.gasUsed * tx.gasPrice;
+
+            const balanceAfter = await hre.ethers.provider.getBalance(otherAccount.address);
+            const expectedDelta = withdrawAmount - gasUsed;
+
+            expect(balanceAfter).to.be.closeTo(balanceBefore + expectedDelta, hre.ethers.parseEther('0.0000001'));
+
+        })
+
+        it('should fail bcs not enough balance', async () =>{
+            const {donates} = await setupAndDeploy();
+            expect(donates.Withdraw('', '', 0)).to.be.reverted;
+        });
     })
 
+    describe("user logic", () =>{
+          const user = {
+            user: {
+                name: 'owner',
+                uuid: 'uuid',
+                topics: ['uwынск', 'q'],
+                wishes: [],
+                payments: [], 
+            },
+            currentBalance: 0,
+        };
+      
+    
+        it('should create right owner', async () =>{
+            const {owner, donates} = await setupAndDeploy(2);
+            await donates.RegisterUser('owner', 'uuid' ,['uwынск', 'q']);
+        
+            expect(((await donates.users(owner.address)).currentBalance)).to.equal(user.currentBalance);
+            expect((await donates.users(owner.address)).user.name).to.equal(user.user.name);
+            expect((await donates.users(owner.address)).user.uuid).to.equal(user.user.uuid);
+            expect((await donates.users(owner.address)).user.topics).to.deep.equal(user.user.topics);
+            expect((await donates.users(owner.address)).user.wishes).to.deep.equal(user.user.wishes);
+            expect((await donates.users(owner.address)).user.payments).to.deep.equal(user.user.payments);
+        })
+        
+        it('should correctly rename user', async () =>{
+            const {owner, donates} = await setupAndDeploy(2);
+            await donates.RegisterUser('owner', 'uuid' ,['uwынск', 'q']);
+            await donates.ChangeName("uwынск");
+            expect((await donates.users(owner.address)).user.name).to.equal('uwынск');
+        })
+    })
+
+    
 })
