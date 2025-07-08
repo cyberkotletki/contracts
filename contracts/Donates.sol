@@ -17,7 +17,7 @@ contract Donates {
 
     //OTHER VARIABLES
     mapping(address => UserBank) public users;
-    uint private ownerBalance;
+    uint public ownerBalance;
 
     //EVENTS
     event UserCreated(string indexed uuid, string name);
@@ -83,9 +83,11 @@ contract Donates {
             transferedToUserAmount: 0
         });
 
-        uint transferedToUserAmount = payAndTakeCommission(payable(payment.paymentInfo.toAddress), msg.value);
-        payment.transferedToUserAmount = transferedToUserAmount;
 
+        (uint amount, uint commission) = getComission(msg.value, K);
+        users[payment.paymentInfo.toAddress].currentBalance+=amount;
+        payment.transferedToUserAmount = amount;
+        ownerBalance+=commission;
         emit PaymentCredited(payment.paymentInfo.toUUID, payment, PaymentType.Donate);  
     }
 
@@ -158,11 +160,12 @@ contract Donates {
                     emit WishCompleted(users[useraddr].user.uuid, wishId, currentBalance); 
                     return;
                 } 
+
                 require(!arr[i].completed, "already completed");
-                
                 uint price = arr[i].price;
                 arr[i].completed = true;
-                 emit WishCompleted(users[useraddr].user.uuid, wishId, price); 
+                
+                emit WishCompleted(users[useraddr].user.uuid, wishId, price); 
                 return;
             }
         } 
@@ -174,10 +177,14 @@ contract Donates {
         users[msg.sender].user.name = newName;
     }
 
-
-    
-
     //OWNER FUNCTIONS
+    function OwnerWithdaw(uint amount) external {
+        require(msg.sender == owner, "u must be owner!");
+        ownerBalance-=amount;
+        (bool send, ) = msg.sender.call{value: amount}("");
+        assert(send);
+    }
+
     // function ChangeCommission(uint commission) external {
     //     require(msg.sender == owner, "u're not owner!");
     //     require(commission < 10, "commission can't be more than 10%");
@@ -189,15 +196,11 @@ contract Donates {
 
     //INTERNAL FUNCTIONS
 
-
-    // returns the amount of ETH, that user gets
-    function payAndTakeCommission(address payable addr, uint amount) internal returns(uint) {
-        uint commission = (amount * K) / SCALE;
-        ownerBalance+=commission;
-
-        (bool send, ) = addr.call{value: amount-commission}(""); 
-        assert(send);
-
-        return amount - commission;
-    }    
+    //get comission divides amount into two parts: (value, commission)
+    //value - amount of ETH that'll be transfered to user
+    //comission transfered to owner balance
+    function getComission(uint amount, uint k) private pure returns(uint, uint){
+        uint commission = (amount * k )/1000;
+        return (amount - commission, commission);
+    }
 }

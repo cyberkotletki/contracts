@@ -24,14 +24,10 @@ describe('donates', () =>{
             expect(await donates.K()).to.equal(DEFAULT_COMMISSION*10);
         })
 
-        // it('should throw exception on K > 10', async () =>{
-        //     const {donates} = await setupAndDeploy(11);
-        //     expect(await donates.fallback).to.be.reverted;
-        // })
     })
 
     describe('adding and removing wishes', () =>{
-        it('should add wishes', async () =>{
+        it('should add and remove wishes', async () =>{
             const {donates, owner} = await setupAndDeploy(2);
             
             await donates.RegisterUser('name', 'uuid', ['topic1', 'topic2']);
@@ -48,18 +44,51 @@ describe('donates', () =>{
                 description: 'description',
                 completed: false,
             })
-            newUser = await donates.users(owner);
-            console.log("AFTER ADDING WISH: ", newUser.user.wishes);
-
-
+        
             await donates.CompleteOrRemoveWish(owner.address, 1, true);
             newUser = await donates.users(owner);
-            console.log("AFTER REMOVING WISH: ", newUser.user.wishes);
+            expect(newUser.user.wishes.length).to.equal(0);
+        })
+    })
 
+    describe("verify donation works", () =>{
+        it("should get the right commission", async () =>{
+            const {donates, owner, otherAccount} = await setupAndDeploy(2);
             
+            await donates.connect(owner).RegisterUser('owner', '0', ['owo', 'uwu']);
+            
+            await donates.connect(otherAccount).RegisterUser('idk', '1', ['-w-']);
+            const otherAccountAddress = otherAccount.address;
+
+            await donates.connect(otherAccount).AddWish({
+                userUUID: '1',
+                id: 0,
+                currentBalance: 0,
+                price: 10000000000,
+                name: 'book',
+                link: 'https://boook',
+                description: 'it is a book',
+                completed: false
+            });
+
+            const donateAmount = hre.ethers.parseEther('0.00001');
+            await donates.connect(owner).Donate('010', {
+                userName: 'owner',
+                messageText: 'hello!',
+            }, {
+                date: 1234,
+                fromUUID: '0',
+                toUUID: '1',
+                wishId: 0,
+                toAddress: otherAccountAddress,
+                paymentType: 0,
+            }, {
+                value: donateAmount,
+            })
+
+            expect(await donates.ownerBalance()).to.equal(donateAmount*BigInt(2)/BigInt(100));
         })
 
     
     })
-    
 })
