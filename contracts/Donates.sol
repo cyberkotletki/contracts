@@ -6,6 +6,7 @@ pragma solidity ^0.8.24;
 error ArrayIsEmpty(string arrName);
 error Alreadyexists();
 error CantBeEmpty();
+error MustBeMoreThanMinimalTransferCost();
 
 contract Donates {
     address payable public owner; 
@@ -66,7 +67,7 @@ contract Donates {
     //donate from User/anonymous -> User (specified wish)
     function Donate(string memory uuid, PaymentUserData memory pud, PaymentInfo memory pi) external payable {
         require(bytes(uuid).length > 0, "uuid can't be null");
-        require(msg.value >= MINIMAL_TRANSFER_COST, "donate must be more than 10 cent");
+        require(msg.value >= MINIMAL_TRANSFER_COST, Alreadyexists());
 
          Payment memory payment = Payment({
             uuid: uuid,
@@ -179,6 +180,7 @@ contract Donates {
 
     //OWNER FUNCTIONS
     function OwnerWithdaw(uint amount) external {
+        require(amount >= MINIMAL_TRANSFER_COST, Alreadyexists());
         require(msg.sender == owner, "u must be owner!");
         ownerBalance-=amount;
         (bool send, ) = msg.sender.call{value: amount}("");

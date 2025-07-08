@@ -83,7 +83,55 @@ describe('donates', () =>{
                 description: 'description',
                 completed: true,
             })).to.be.revertedWith('cost must be more than zero');
+
+        
         })
+        
+        it('should throw exception bcs already completed', async () =>{
+            const {donates, owner} = await setupAndDeploy();
+            
+            await donates.RegisterUser('name', 'uuid', ['topic1', 'topic2']);
+            await donates.AddWish({
+                userUUID: '0',
+                id: 1,
+                currentBalance: 0,
+                price: 999,
+                name: 'name',
+                link: 'https://uwu',
+                description: 'description',
+                completed: false,
+            });
+
+            expect(donates.CompleteOrRemoveWish(owner.address, 1, false)).
+            to.be.revertedWith('already completed');
+        })
+
+        it('should throw exception bcs ID1 == ID2', async () =>{
+              const {donates, owner} = await setupAndDeploy();
+            
+            await donates.RegisterUser('name', 'uuid', ['topic1', 'topic2']);
+            await donates.AddWish({
+                userUUID: '0',
+                id: 1,
+                currentBalance: 0,
+                price: 567,
+                name: 'name',
+                link: 'https://uwu',
+                description: 'description',
+                completed: false,
+            });
+
+            expect(donates.AddWish({
+                userUUID: '0',
+                id: 1,
+                currentBalance: 0,
+                price: 9809,
+                name: 'name',
+                link: 'https://uwu',
+                description: 'description',
+                completed: false,
+            })).to.be.revertedWithCustomError(donates, 'Alreadyexists');
+        });
 
     })
 
@@ -181,6 +229,14 @@ describe('donates', () =>{
             const {donates} = await setupAndDeploy();
             expect(donates.Withdraw('', '', 0)).to.be.reverted;
         });
+    })
+
+    describe("owner withdraw", () =>{
+        it('should transact', () => {
+            // const {donates, owner, otherAccount} = setupAndDeploy();
+            
+    
+        })
     })
 
     describe("user logic", () =>{
