@@ -29,4 +29,35 @@ describe('donates', () =>{
             expect(await donates.fallback).to.be.reverted;
         })
     })
+
+    describe('adding and removing wishes', () =>{
+        it('should add wishes', async () =>{
+            const {donates, owner} = await setupAndDeploy(2);
+            
+            await donates.RegisterUser('name', 'uuid', ['topic1', 'topic2']);
+            let newUser = await donates.users(owner.address);
+            console.log(newUser);
+
+            await donates.AddWish({
+                id: 1,
+                currentBalance: 0,
+                cost: 100,
+                name: 'name',
+                link: 'https://uwu',
+                description: 'description',
+            })
+            newUser = await donates.users(owner);
+            console.log("AFTER ADDING WISH: ", newUser.user.wishes);
+
+
+            await donates.RemoveWish(owner.address, 1);
+            newUser = await donates.users(owner);
+            console.log("AFTER REMOVING WISH: ", newUser.user.wishes);
+
+            
+        })
+
+    
+    })
+    
 })

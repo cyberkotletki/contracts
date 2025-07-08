@@ -15,10 +15,17 @@ async function main() {
 
 
 
-    const contract = new ethers.Contract(address, abi, provider);
-    contract.on("UserCreated", (uuid, name, event) =>{
-        console.log(`name: ${name} uuid: ${uuid}`);
-    })
+
+    // const contract = new ethers.Contract(address, abi, provider);
+    // contract.RegisterUser({
+    //     name: "name",
+    //     uuid: "uuid",
+    //     topics: ["topics", "topics"]
+    // });
+
+    // console.log(contract.users());
+
+    // contract.addWis
 
 }
 

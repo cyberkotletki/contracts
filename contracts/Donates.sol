@@ -1,8 +1,7 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.24;
 
-import "./Handler.sol";
-import "./Types.sol";
+    import "./Types.sol";
 
 contract Donates {
     address payable public owner; 
@@ -13,13 +12,13 @@ contract Donates {
     uint constant public MINIMAL_DONATE = 3888342360768 wei; //~10 cents
 
     //other variables
-    mapping(address => UserBank) private users;
+    mapping(address => UserBank) public users;
     uint private ownerBalance;
 
     //events
     event UserCreated(string indexed uuid, string name);
     event PaymentCredited(string indexed streamerUUid, Payment payment, PaymentType indexed paymentType);
-    event CommissionChanged(uint currentComission);
+    // event CommissionChanged(uint currentComission);
 
 
     constructor(uint k) {
@@ -74,8 +73,6 @@ contract Donates {
         emit PaymentCredited(payment.paymentInfo.toUUID, payment, PaymentType.Donate);  
     }
 
-    
-
     function Withdraw(string memory uuid, uint amount) external {
          
         require(users[msg.sender].currentBalance >= amount);
@@ -94,7 +91,6 @@ contract Donates {
                 paymentType: PaymentType.Withdraw
             }),
             paymentUserData: PaymentUserData({
-                isAnonymous: true,
                 userName: users[msg.sender].user.name,
                 messageText: ""
             }),
@@ -105,14 +101,29 @@ contract Donates {
         emit PaymentCredited(users[msg.sender].user.uuid, payment, payment.paymentInfo.paymentType);
     }
 
+    function AddWish(Wish memory wish) external {
+        require(wish.cost > 0, "cost must be more than zero");
+        users[msg.sender].user.wishes.push(wish);
+    }
+
+    function RemoveWish(address useraddr, uint wishId) public {
+        Wish[] storage arr = users[useraddr].user.wishes;
+        for (uint i = 0; i < arr.length; i++){
+            if (arr[i].id == wishId){
+               arr[i] = arr[arr.length-1];
+               arr.pop();
+            }
+        } 
+    }
+    
 
     //owner functions
-    function ChangeCommission(uint commission) external {
-        require(msg.sender == owner, "u're not owner!");
-        require(commission < 10, "commission can't be more than 10%");
-        K = commission * 10;
-        emit CommissionChanged(commission);
-    }
+    // function ChangeCommission(uint commission) external {
+    //     require(msg.sender == owner, "u're not owner!");
+    //     require(commission < 10, "commission can't be more than 10%");
+    //     K = commission * 10;
+    //     emit CommissionChanged(commission);
+    // }
 
 
 
@@ -123,7 +134,5 @@ contract Donates {
 
         (bool send, ) = addr.call{value: amount-commission}("");
         assert(send);
-    }
-
-    
+    }    
 }

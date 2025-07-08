@@ -3,46 +3,54 @@ pragma solidity ^0.8.10;
 
 enum PaymentType {Donate, Withdraw}
 
+
+// враппер юзера, чтобы иметь быстрый доступ к его балансу
 struct UserBank{
     User user;
     uint currentBalance;
 }
 
+
 struct User {
     string uuid;
     string name;    
-    Payment[] payments;
-    Wish[] wishes;
-    string[] topics;
-}
+    Payment[] payments; //транзакции
+    Wish[] wishes; 
+    string[] topics; //темы стримера
+ }
 
+
+//транзакция
 struct Payment {
     string uuid;
-    PaymentUserData paymentUserData;
+    PaymentUserData paymentUserData; 
     PaymentInfo paymentInfo;
     uint amount;
 }
 
 struct Wish {
     uint id;
-    uint currentBalance;
-    uint cost;
+    uint currentBalance; //текущее кол-во собранных денег
+    uint cost; 
     string name;
-    string link;
-    string description;
-    string image;
+    string link; //ссылка на товар
+    string description; 
+    // string image; //путь на картинку (хз зачем она тут, мб уберу ибо не используется)
 }
 
+
+// сообщения и имя, которые видит стример в транзакциях
 struct PaymentUserData {
-    bool isAnonymous;
     string userName;
     string messageText;
 }
 
+
+// общая инфа о транзакциях
 struct PaymentInfo{
     uint date;
     string toUUID;
     uint wishId;
     address toAddress;
-    PaymentType paymentType;
+    PaymentType paymentType; // вывод/донат
 }
