@@ -88,7 +88,6 @@ describe('donates', () =>{
 
             expect(await donates.ownerBalance()).to.equal(donateAmount*BigInt(2)/BigInt(100));
         })
-
-    
     })
+
 })
