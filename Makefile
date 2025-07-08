@@ -3,7 +3,7 @@ bunABI:
 	bun hardhat compile
 	mv ./artifacts/contracts/Donates.sol/Donates.json ./
 
-bunABI:
+npmABI:
 	npm i
 	npm hardhat compile
 	mv ./artifacts/contracts/Donates.sol/Donates.json ./
