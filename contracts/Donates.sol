@@ -94,7 +94,7 @@ contract Donates {
 
     //withdraw for the Users, don't charge a commission
     function Withdraw(string memory uuid, string memory userUUID, uint amount) external {
-        require(users[msg.sender].currentBalance >= amount);
+        require(users[msg.sender].currentBalance >= amount, "not enough money");
         users[msg.sender].currentBalance -= amount;
 
         (bool send, ) = payable(msg.sender).call{value: amount}("");
