@@ -172,7 +172,7 @@ describe('donates', () =>{
         })
 
         it('should withdraw succesfully', async () =>{
-                   const {donates, owner, otherAccount} = await setupAndDeploy(2);
+            const {donates, owner, otherAccount} = await setupAndDeploy(2);
             await donates.connect(owner).RegisterUser('owner', '0', ['owo', 'uwu']);
             await donates.connect(otherAccount).RegisterUser('idk', '1', ['-w-']);
             const otherAccountAddress = otherAccount.address;
@@ -206,8 +206,6 @@ describe('donates', () =>{
 
 
             const withdrawAmount = donateAmount * BigInt(98)/BigInt(100);            
-        
-
             const balanceBefore = await hre.ethers.provider.getBalance(otherAccount.address);
 
             const tx = await donates.connect(otherAccount).Withdraw('wqe', '1', withdrawAmount);
@@ -232,10 +230,55 @@ describe('donates', () =>{
     })
 
     describe("owner withdraw", () =>{
-        it('should transact', () => {
-            // const {donates, owner, otherAccount} = setupAndDeploy();
-            
-    
+        it('should transact', async () => {
+            const {donates, owner, otherAccount} = await setupAndDeploy(2);
+            await donates.connect(owner).RegisterUser('owner', '0', ['owo', 'uwu']);
+            await donates.connect(otherAccount).RegisterUser('idk', '1', ['-w-']);
+            const otherAccountAddress = otherAccount.address;
+
+            await donates.connect(otherAccount).AddWish({
+                userUUID: '1',
+                id: 4,
+                currentBalance: 0,
+                price: 10000000000,
+                name: 'book',
+                link: 'https://boook',
+                description: 'it is a book',
+                completed: false
+            });
+
+            const donateAmount = hre.ethers.parseEther('0.004');
+            await donates.connect(owner).Donate('010', {
+                userName: 'owner',
+                messageText: 'hello!',
+            }, {
+                date: 1234,
+                fromUUID: '0',
+                toUUID: '1',
+                wishId: 0,
+                toAddress: otherAccountAddress,
+                paymentType: 0,
+            }, {
+                value: donateAmount,
+            })
+
+            const balanceBefore = await hre.ethers.provider.getBalance(owner.address);
+        
+            const withdrawAmount = await donates.ownerBalance();
+            const tx = await donates.OwnerWithdaw(withdrawAmount);
+
+            const receipt = await tx.wait();
+            if (!receipt){
+                fail();
+            }
+            const gasUsed = receipt.gasUsed * tx.gasPrice;
+            const expectedDelta = withdrawAmount - gasUsed;
+
+            const balanceAfter = await hre.ethers.provider.getBalance(owner.address);
+
+
+
+            expect(balanceAfter).to.closeTo(balanceAfter + expectedDelta,  hre.ethers.parseEther('0.000001'));
         })
     })
 

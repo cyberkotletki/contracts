@@ -180,8 +180,10 @@ contract Donates {
 
     //OWNER FUNCTIONS
     function OwnerWithdaw(uint amount) external {
-        require(amount >= MINIMAL_TRANSFER_COST, Alreadyexists());
         require(msg.sender == owner, "u must be owner!");
+        require(amount >= MINIMAL_TRANSFER_COST, MustBeMoreThanMinimalTransferCost());
+        require(ownerBalance >= amount, 'not enough money');
+        
         ownerBalance-=amount;
         (bool send, ) = msg.sender.call{value: amount}("");
         assert(send);
