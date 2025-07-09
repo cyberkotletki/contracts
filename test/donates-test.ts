@@ -144,7 +144,7 @@ describe('donates', () =>{
 
             await donates.connect(otherAccount).addWish({
                 userUUID: '1',
-                id: 0,
+                id: 4,
                 currentBalance: 0,
                 price: 10000000000,
                 name: 'book',
@@ -161,7 +161,7 @@ describe('donates', () =>{
                 date: 1234,
                 fromUUID: '0',
                 toUUID: '1',
-                wishId: 0,
+                wishId: 4,
                 toAddress: otherAccountAddress,
                 paymentType: 0,
             }, {

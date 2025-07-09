@@ -14,7 +14,7 @@ contract Donates {
     //CONSTANTS
     uint public K;
     uint constant public SCALE = 1000;
-    uint constant public MINIMAL_TRANSFER_COST = 3888342360768 wei; //~10 cents
+    uint constant public MINIMAL_TRANSFER_COST = 1000 gwei; //~20 cents
 
     //OTHER VARIABLES
     mapping(address => UserBank) public users;
@@ -67,7 +67,7 @@ contract Donates {
     //donate from User/anonymous -> User (specified wish)
     function donate(string memory uuid, PaymentUserData memory pud, PaymentInfo memory pi) external payable {
         require(bytes(uuid).length > 0, "uuid can't be null");
-        require(msg.value >= MINIMAL_TRANSFER_COST, Alreadyexists());
+        require(msg.value >= MINIMAL_TRANSFER_COST, MustBeMoreThanMinimalTransferCost());
 
          Payment memory payment = Payment({
             uuid: uuid,
