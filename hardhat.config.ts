@@ -4,7 +4,14 @@ import { secret_config } from "./secret_config";
 
 
 const config = {
-    secret_config,
+    default: "Amoy",
+    networks: {
+        polygon_amoy: {
+           url: secret_config.url,
+           accounts: secret_config.accounts,
+           chainId: 80002,
+        }  
+    },
     solidity: {
         version: "0.8.28",
         settings: {
