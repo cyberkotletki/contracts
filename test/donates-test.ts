@@ -39,7 +39,7 @@ describe('donates', () =>{
 
             await donates.addWish({
                 userUUID: newUser.user.uuid,
-                id: 1,
+                uuid: '1',
                 currentBalance: 0,
                 price: 100,
                 name: 'name',
@@ -48,7 +48,7 @@ describe('donates', () =>{
                 completed: false,
             })
         
-            await donates.completeOrRemoveWish(owner.address, 1, true);
+            await donates.completeOrRemoveWish(owner.address, '1', true);
             newUser = await donates.users(owner);
             expect(newUser.user.wishes.length).to.equal(0);
         });
@@ -59,7 +59,7 @@ describe('donates', () =>{
             await donates.registerUser('name', 'uuid', ['topic1', 'topic2']);
             expect(donates.addWish({
                 userUUID: '0',
-                id: 1,
+                uuid: '1',
                 currentBalance: 0,
                 price: 0,
                 name: 'name',
@@ -75,7 +75,7 @@ describe('donates', () =>{
             await donates.registerUser('name', 'uuid', ['topic1', 'topic2']);
             expect(donates.addWish({
                 userUUID: '0',
-                id: 1,
+                uuid: '1',
                 currentBalance: 0,
                 price: 0,
                 name: 'name',
@@ -93,7 +93,7 @@ describe('donates', () =>{
             await donates.registerUser('name', 'uuid', ['topic1', 'topic2']);
             await donates.addWish({
                 userUUID: '0',
-                id: 1,
+                uuid: '1',
                 currentBalance: 0,
                 price: 999,
                 name: 'name',
@@ -102,7 +102,7 @@ describe('donates', () =>{
                 completed: false,
             });
 
-            expect(donates.completeOrRemoveWish(owner.address, 1, false)).
+            expect(donates.completeOrRemoveWish(owner.address, '1', false)).
             to.be.revertedWith('already completed');
         })
 
@@ -112,7 +112,7 @@ describe('donates', () =>{
             await donates.registerUser('name', 'uuid', ['topic1', 'topic2']);
             await donates.addWish({
                 userUUID: '0',
-                id: 1,
+                uuid: '1',
                 currentBalance: 0,
                 price: 567,
                 name: 'name',
@@ -123,7 +123,7 @@ describe('donates', () =>{
 
             expect(donates.addWish({
                 userUUID: '0',
-                id: 1,
+                uuid: '1',
                 currentBalance: 0,
                 price: 9809,
                 name: 'name',
@@ -144,7 +144,7 @@ describe('donates', () =>{
 
             await donates.connect(otherAccount).addWish({
                 userUUID: '1',
-                id: 4,
+                uuid: '4',
                 currentBalance: 0,
                 price: 10000000000,
                 name: 'book',
@@ -161,7 +161,7 @@ describe('donates', () =>{
                 date: 1234,
                 fromUUID: '0',
                 toUUID: '1',
-                wishId: 4,
+                wishUUID: '4',
                 toAddress: otherAccountAddress,
                 paymentType: 0,
             }, {
@@ -179,7 +179,7 @@ describe('donates', () =>{
 
             await donates.connect(otherAccount).addWish({
                 userUUID: '1',
-                id: 0,
+                uuid: '0',
                 currentBalance: 0,
                 price: 10000000000,
                 name: 'book',
@@ -196,7 +196,7 @@ describe('donates', () =>{
                 date: 1234,
                 fromUUID: '0',
                 toUUID: '1',
-                wishId: 0,
+                wishUUID: '0',
                 toAddress: otherAccountAddress,
                 paymentType: 0,
             }, {
@@ -238,7 +238,7 @@ describe('donates', () =>{
 
             await donates.connect(otherAccount).addWish({
                 userUUID: '1',
-                id: 4,
+                uuid: '4',
                 currentBalance: 0,
                 price: 10000000000,
                 name: 'book',
@@ -255,7 +255,7 @@ describe('donates', () =>{
                 date: 1234,
                 fromUUID: '0',
                 toUUID: '1',
-                wishId: 0,
+                wishUUID: '0',
                 toAddress: otherAccountAddress,
                 paymentType: 0,
             }, {

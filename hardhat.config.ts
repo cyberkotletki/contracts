@@ -1,16 +1,10 @@
 import { HardhatUserConfig } from "hardhat/config";
 import "@nomicfoundation/hardhat-toolbox";
+import { secret_config } from "./secret_config";
+
 
 const config = {
-    default: "Amoy",
-    networks: {
-        polygon_amoy: {
-            url: 'PRIVATE_KEY',
-            accounts: ['ACCOUNT_PRIVATE_KEY'],
-            chainId: 80002,
-        }
-        
-    },
+    secret_config,
     solidity: {
         version: "0.8.28",
         settings: {

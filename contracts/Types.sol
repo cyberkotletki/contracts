@@ -17,6 +17,7 @@ struct User {
     Payment[] payments; //транзакции
     Wish[] wishes; 
     string[] topics; //темы стримера
+    bool isRegistered;
  }
 
 
@@ -31,7 +32,7 @@ struct Payment {
 
 struct Wish {
     string userUUID;
-    uint id;
+    string uuid;
     uint currentBalance; //текущее кол-во собранных денег
     uint price; 
     string name;
@@ -54,7 +55,7 @@ struct PaymentInfo{
     uint date;
     string fromUUID;
     string toUUID;
-    uint wishId;
+    string wishUUID;
     address toAddress;
     PaymentType paymentType; // вывод/донат
 }

@@ -14,7 +14,7 @@ contract Donates {
     //CONSTANTS
     uint public K;
     uint constant public SCALE = 1000;
-    uint constant public MINIMAL_TRANSFER_COST = 1000 gwei; //~20 cents
+    uint constant public MINIMAL_TRANSFER_COST = 1000 gwei; 
 
     //OTHER VARIABLES
     mapping(address => UserBank) public users;
@@ -25,9 +25,9 @@ contract Donates {
     event PaymentCredited(string indexed streamerUUid, Payment payment, PaymentType indexed paymentType);
 
     //wish events
-    event WishAdded(string indexed userUUID, uint wishId, uint price);
-    event WishCompleted(string indexed userUUID , uint wishid, uint price);
-    event WishDeleted(string indexed userUUID, uint wishid, uint accumulatedAmount);
+    event WishAdded(string indexed userUUID, string wishId, uint price);
+    event WishCompleted(string indexed userUUID , string wishid, uint price);
+    event WishDeleted(string indexed userUUID, string wishid, uint accumulatedAmount);
 
     // event CommissionChanged(uint currentComission); if we want to add dynamic comission changing
 
@@ -47,6 +47,8 @@ contract Donates {
     //just a user registration
     function registerUser(string memory name, string memory uuid, string[] memory topics) external {
         require(bytes(name).length > 0, "name can't be empty");
+        require(!users[msg.sender].user.isRegistered, Alreadyexists());        
+
         Wish[] memory wishes;
         Payment[] memory payments;
         
@@ -56,7 +58,8 @@ contract Donates {
                 uuid: uuid,
                 topics: topics,
                 wishes: wishes,
-                payments: payments
+                payments: payments,
+                isRegistered: true
             }),
             currentBalance: 0
         });
@@ -76,7 +79,7 @@ contract Donates {
                 date: block.timestamp,
                 fromUUID: pi.fromUUID,
                 toUUID: pi.toUUID,
-                wishId: pi.wishId,
+                wishUUID: pi.wishUUID,
                 toAddress: pi.toAddress,
                 paymentType: PaymentType.Donate
             }),
@@ -87,6 +90,19 @@ contract Donates {
 
         (uint amount, uint commission) = _getComission(msg.value, K);
         users[payment.paymentInfo.toAddress].currentBalance+=amount;
+
+        Wish[] storage arr = users[payment.paymentInfo.toAddress].user.wishes;
+        for (uint i = 0; i < arr.length; i++){
+            if (keccak256(bytes(arr[i].uuid)) == keccak256(bytes(pi.wishUUID))){
+                arr[i].currentBalance+= amount;
+                if (arr[i].currentBalance >= arr[i].price){
+                    completeOrRemoveWish(pi.toAddress, pi.wishUUID, false);
+                    emit WishCompleted(uuid, pi.wishUUID, arr[i].price);
+                    break;
+                } 
+            }
+        }
+
         payment.transferedToUserAmount = amount;
         ownerBalance+=commission;
         emit PaymentCredited(payment.paymentInfo.toUUID, payment, PaymentType.Donate);  
@@ -107,7 +123,7 @@ contract Donates {
                 date: block.timestamp,
                 fromUUID: userUUID,
                 toUUID: users[msg.sender].user.uuid,
-                wishId: 0,
+                wishUUID: '', //bcs there's no wish data used
                 toAddress: msg.sender,
                 paymentType: PaymentType.Withdraw
             }),
@@ -132,7 +148,7 @@ contract Donates {
         bool exist = false;
         Wish[] storage arr = users[msg.sender].user.wishes;
         for (uint i = 0; i < arr.length; i++){
-            if (arr[i].id == wish.id){
+            if (keccak256(bytes(arr[i].uuid)) == keccak256(bytes(wish.uuid))){
                 exist = true;
                 break;
             }
@@ -141,24 +157,24 @@ contract Donates {
 
 
         users[msg.sender].user.wishes.push(wish);
-        emit WishAdded(wish.userUUID, wish.id, wish.price);
+        emit WishAdded(wish.userUUID, wish.uuid, wish.price);
     }
 
 
     //if remove == true, removes wish from the use, else it just mark as finished
-    function completeOrRemoveWish(address useraddr, uint wishId, bool remove) external {
+    function completeOrRemoveWish(address useraddr, string memory wishId, bool remove) public {
         Wish[] storage arr = users[useraddr].user.wishes;
         require(arr.length > 0, ArrayIsEmpty('wishes'));
         
         for (uint i = 0; i < arr.length; i++){
-            if (arr[i].id == wishId){
+            if (keccak256(bytes(arr[i].uuid)) == keccak256(bytes(wishId))){
                 
                 if (remove){
                     uint currentBalance = arr[i].currentBalance;
                     arr[i] = arr[arr.length-1];
                     arr.pop();
                     
-                    emit WishCompleted(users[useraddr].user.uuid, wishId, currentBalance); 
+                    emit WishDeleted(users[useraddr].user.uuid, wishId, currentBalance); 
                     return;
                 } 
 
@@ -185,7 +201,7 @@ contract Donates {
         require(ownerBalance >= amount, 'not enough money');
         
         ownerBalance-=amount;
-        (bool send, ) = msg.sender.call{value: amount}("");
+        (bool send, ) = owner.call{value: amount}("");
         assert(send);
     }
 
