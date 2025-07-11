@@ -67,6 +67,10 @@ contract Donates {
         emit UserCreated(uuid, user.user.name);
     }
 
+    function isRegistered(address userAddress) external view returns (bool) {
+     return users[userAddress].user.isRegistered;
+    }
+
     //donate from User/anonymous -> User (specified wish)
     function donate(string memory uuid, PaymentUserData memory pud, PaymentInfo memory pi) external payable {
         require(bytes(uuid).length > 0, "uuid can't be null");

@@ -30,19 +30,6 @@ struct Payment {
     uint transferedToUserAmount;
 }
 
-struct Wish {
-    string userUUID;
-    string uuid;
-    uint currentBalance; //текущее кол-во собранных денег
-    uint price; 
-    string name;
-    string link; //ссылка на товар
-    string description; 
-    bool completed;
-    // string image; //путь на картинку (хз зачем она тут, мб уберу ибо не используется)
-}
-
-
 // сообщения и имя, которые видит стример в транзакциях
 struct PaymentUserData {
     string userName;
@@ -58,4 +45,16 @@ struct PaymentInfo{
     string wishUUID;
     address toAddress;
     PaymentType paymentType; // вывод/донат
+}
+
+struct Wish {
+    string userUUID;
+    string uuid;
+    uint currentBalance; //текущее кол-во собранных денег
+    uint price; 
+    string name;
+    string link; //ссылка на товар
+    string description; 
+    bool completed;
+    // string image; //путь на картинку (хз зачем она тут, мб уберу ибо не используется)
 }

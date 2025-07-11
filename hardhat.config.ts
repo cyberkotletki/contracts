@@ -17,7 +17,7 @@ const config = {
         settings: {
             viaIR: true,
             optimizer: {
-                enabled: true,
+                enabled: false,
                 runs: 1000,
             },
             evmVersion: "cancun",
